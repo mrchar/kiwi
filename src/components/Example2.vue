@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue"
-import { en, zh, locale, setLocale, t } from "../composables/i18n"
+import { en, zh, locale, setLocale, t } from "../../lib/main"
 
 const language = computed(() => {
   switch (locale.value) {

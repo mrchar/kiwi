@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue"
-import { en, zh, locale, setLocale, m } from "../composables/i18n"
+import { en, zh, locale, setLocale, m } from "../../lib/main"
 
 const message = m({ zh: "你好！", en: "Hello!" })
 

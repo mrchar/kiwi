@@ -3,6 +3,18 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "files": [
+    "dist",
+    "index.d.ts"
+  ],
+  "main": "./dist/kiwi.umd.cjs",
+  "module": "./dist/kiwi.js",
+  "types": "./index.d.ts",
+  "exports": {
+    "types": "./index.d.ts",
+    "import": "./dist/kiwi.js",
+    "require": "./dist/kiwi.umd.cjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
