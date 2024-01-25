@@ -46,38 +46,29 @@ export interface Instance {
    * @param translations 默认提供的翻译选项，必须包含defaultLocale对应的翻译
    */
   createMessage(translations: Translations): Message
-}
 
-class InstanceImpl implements Instance {
-  defaultLocale: string
-  currentLocale: Ref<string>
-  locale: Readonly<Ref<string>>
+  /**
+   * 在template中直接使用翻译的工具方法
+   *
+   * @param translations 响应式返回翻译的内容
+   */
+  getLocaleTranslation(translations: Translations): string
 
-  constructor(defaultLocale: string) {
-    this.defaultLocale = defaultLocale
-    this.currentLocale = ref<string>(defaultLocale)
-    this.locale = readonly(this.currentLocale)
-  }
+  /**
+   * 用于创建Message的帮助函数，和CreateMessage作用相同
+   *
+   * @param translations 翻译选项
+   * @returns
+   */
+  m(translations: Translations): Message
 
-  setLocale(locale: string): void {
-    this.currentLocale.value = locale
-  }
-
-  createMessage(translations: Translations): Message {
-    const keys = Object.keys(translations)
-    if (!keys.includes(this.defaultLocale)) {
-      throw new Error("missing default translation!")
-    }
-
-    return computed(() => {
-      if (!Object.keys(translations).includes(this.locale.value)) {
-        return translations[this.defaultLocale]
-      }
-
-      // 根据语言获取翻译
-      return translations[this.locale.value]
-    })
-  }
+  /**
+   * 用于在template中使用的帮助函数，直接返回翻译的值而不是响应式对象
+   *
+   * @param translations 翻译选项
+   * @returns
+   */
+  t(translations: Translations): string
 }
 
 /**
@@ -87,8 +78,48 @@ class InstanceImpl implements Instance {
  * @returns 国际化实例
  */
 export function createInstance(defaultLocale: string): Instance {
-  return new InstanceImpl(defaultLocale)
+  const currentLocale = ref<string>(defaultLocale)
+  const locale = readonly(currentLocale)
+
+  function setLocale(locale: string): void {
+    currentLocale.value = locale
+  }
+
+  function createMessage(translations: Translations): Message {
+    const keys = Object.keys(translations)
+    if (!keys.includes(defaultLocale)) {
+      throw new Error("missing default translation!")
+    }
+
+    return computed(() => {
+      if (!Object.keys(translations).includes(locale.value)) {
+        return translations[defaultLocale]
+      }
+
+      // 根据语言获取翻译
+      return translations[locale.value]
+    })
+  }
+
+  function getLocaleTranslation(translations: Translations): string {
+    return createMessage(translations).value
+  }
+
+  return {
+    defaultLocale,
+    locale,
+    setLocale,
+    createMessage,
+    getLocaleTranslation,
+    m: createMessage,
+    t: getLocaleTranslation,
+  }
 }
+
+/**
+ * 用于创建国际化实例的帮助函数
+ */
+export const i18n = createInstance
 
 /**
  * 默认实例，使用en作为默认语言
@@ -108,39 +139,37 @@ export const locale = defaultInstance.locale
 /**
  * 修改默认实例的语言
  */
-export const setLocale = (value: string) => defaultInstance.setLocale(value)
+export const setLocale = defaultInstance.setLocale
 
 /**
  * 使用默认实例创建消息
  */
-export const createMessage = (translations: Translations) =>
-  defaultInstance.createMessage(translations)
+export const createMessage = defaultInstance.createMessage
 
 /**
- * 用于创建国际化实例的帮助函数
+ * 使用默认实例在template中创建翻译
  */
-export const i18n = createInstance
+export const getLocaleTranslation = defaultInstance.getLocaleTranslation
 
 /**
- * 用于创建Message的帮助函数，和CreateMessage作用相同
+ * 使用默认实例创建消息， 等同于createMessage
  */
-export const m = createMessage
+export const m = defaultInstance.m
 
 /**
- * 用于在template中使用的帮助函数，直接返回翻译的值而不是响应式对象
- *
- * @param translations 翻译选项
- * @returns
+ * 在template中直接使用翻译，等同于getLocaleTranslation
  */
-export const t = (translations: Translations) => m(translations).value
+export const t = defaultInstance.t
 
 export default {
+  createInstance,
+  i18n,
   defaultInstance,
   defaultLocale,
   locale,
   setLocale,
   createMessage,
-  i18n,
+  getLocaleTranslation,
   m,
   t,
 }
