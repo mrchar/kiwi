@@ -11,14 +11,14 @@ const language = computed(() => {
   }
 })
 
-function taggleLanguage() {
+function toggleLanguage() {
   locale.value === zh ? setLocale(en) : setLocale(zh)
 }
 </script>
 
 <template>
   <div>{{ t({ zh: "你好！", en: "Hello!" }) }}</div>
-  <button @click="taggleLanguage">{{ language }}</button>
+  <button @click="toggleLanguage">{{ language }}</button>
 </template>
 
 <style scoped>
